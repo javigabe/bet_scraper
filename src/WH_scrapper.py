@@ -2,6 +2,7 @@
 
 import threading
 import time
+from os import listdir
 import logging
 import requests
 import pyppdf.patch_pyppeteer
@@ -23,7 +24,8 @@ class WH_Scrapper(threading.Thread):
         self.match = match
         self.time_to_sleep = time_to_sleep
         self._running = True
-        self.KEY_WORDS = ["médico", "médica", "medico", "medica", "mto", "col", "(mto)", "(col)"]
+        self.KEY_WORDS = ["médico", "médica", "medico", "medica", "mto", "col", "(mto)",
+        "(col)", "medical", "pausa"]
 
 
     def run(self):
@@ -53,14 +55,16 @@ class WH_Scrapper(threading.Thread):
 
     def get_comments(self, scoreboard):
 
-        CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-        CHROMEDRIVER_PATH = '/usr/local/bin/chromedriver'
+        #CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'#"/usr/bin/google-chrome"
+        CHROMEDRIVER_PATH = './chromedriver' #'/usr/local/bin/chromedriver'
         WINDOW_SIZE = "1920,1080"
 
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
-        chrome_options.binary_location = CHROME_PATH
+        #chrome_options.binary_location = CHROME_PATH
 
 
         prev_comments = []
