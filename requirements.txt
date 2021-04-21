@@ -3,10 +3,10 @@ appdirs==1.4.4
 beautifulsoup4==4.9.3
 bs4==0.0.1
 certifi==2020.12.5
-chardet==4.0.0
 click==7.1.2
 configparser==3.5.0
 cssselect==1.1.0
+discord.py==1.6.0
 EasyProcess==0.3
 fake-useragent==0.1.11
 future==0.18.2
@@ -42,3 +42,4 @@ w3lib==1.22.0
 websockets==8.1
 word2number==1.1
 xvfbwrapper==0.2.9
+pyTelegramBotAPI==3.7.7

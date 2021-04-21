@@ -2,17 +2,14 @@
 
 import threading
 import time
-from os import listdir
 import logging
 import requests
+import asyncio
 import pyppdf.patch_pyppeteer
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-#from requests_html import HTMLSession
-
-
 
 
 BASE_URL = "https://sports.williamhill.es"
@@ -24,8 +21,8 @@ class WH_Scrapper(threading.Thread):
         self.match = match
         self.time_to_sleep = time_to_sleep
         self._running = True
-        self.KEY_WORDS = ["médico", "médica", "medico", "medica", "mto", "col", "(mto)",
-        "(col)", "medical", "pausa"]
+        self.KEY_WORDS = ["médico", "médica", "medico", "medica", "mto", "(mto)",
+        "medical", "pausa", "timeout", "retired"]
 
 
     def run(self):
@@ -37,7 +34,7 @@ class WH_Scrapper(threading.Thread):
 
             match_data = BeautifulSoup(request.text, 'html.parser')
             scoreboard = match_data.find("div", {"id": "scoreboard_frame"})
-            logging.info("scoreboard: {} y url: {}".format(scoreboard, self.match))
+            #logging.info("scoreboard: {} y url: {}".format(scoreboard, self.match))
 
             if (scoreboard is not None):
                 scoreboard_url = scoreboard["data-launch-url"]
@@ -55,8 +52,7 @@ class WH_Scrapper(threading.Thread):
 
     def get_comments(self, scoreboard):
 
-        #CHROME_PATH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'#"/usr/bin/google-chrome"
-        CHROMEDRIVER_PATH = './chromedriver' #'/usr/local/bin/chromedriver'
+        CHROMEDRIVER_PATH = './chromedriver' #'/usr/local/bin/chromedriver' #
         WINDOW_SIZE = "1920,1080"
 
         chrome_options = Options()
@@ -64,25 +60,12 @@ class WH_Scrapper(threading.Thread):
         chrome_options.add_argument('--headless')
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
-        #chrome_options.binary_location = CHROME_PATH
-
 
         prev_comments = []
 
         while (self._running):
 
             try:
-                # session = HTMLSession()
-                # print("hey")
-                #
-                # r = session.get(scoreboard)
-                # print("adios")
-                #
-                # print(r.html.arender())  # this call executes the js in the page
-                # time.sleep(2)
-                # print("holaa")
-                # print(r.html.html)
-                # time.sleep(50)
                 driver = webdriver.Chrome(executable_path=CHROMEDRIVER_PATH,
                           chrome_options=chrome_options)
 
@@ -94,10 +77,18 @@ class WH_Scrapper(threading.Thread):
                 driver.close()
 
                 new_comments = list(set(commentaries) - set(prev_comments))
+                found = False
                 for phrase in new_comments:
+                    if (found is True):
+                        break
                     for key_word in self.KEY_WORDS:
-                        if (key_word in phrase.lower()):
-                            print(phrase)
+                        for word in phrase.split():
+                            if (key_word == word.lower()):
+                                with open("comments.txt", "a") as myfile:
+                                    myfile.write(phrase + "\n")
+                                found = True
+                                print(phrase)
+                                break
 
                 #print(new_comments)
 
@@ -106,6 +97,6 @@ class WH_Scrapper(threading.Thread):
 
 
             except Exception as e:
-                logging.error("Exception in get_comments {}".format(e))
-                logging.error("Fallo el partido {}".format(self.match))
+                #logging.error("Exception in get_comments {}".format(e))
+                #logging.error("Fallo el partido {}".format(self.match))
                 time.sleep(200)
